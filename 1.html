@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NASA Story Generator - Professional Space Education Platform</title>
+  <link rel="stylesheet" href="h.css">
+  <link rel="icon" href="Screenshot 2025-09-26 094936.png">
+  <script src="p.js"></script>
+</head>
+<body>
+  <div class="overlay">
+    <div class="container">
+      <header>
+        <h1>Dream with NASA</h1>
+        <p class="subtitle">Professional Space Education Platform</p>
+
+      </header>
+      
+      <main>
+        <section class="search-box">
+          <input type="text" id="searchInput" placeholder="Enter space topic: Mars, Jupiter, Moon, Saturn, Solar System...">
+          <br>
+          <button class="search-btn" onclick="generateStory()">Generate Educational Content</button>
+        </section>
+
+        <section id="results"></section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const NASA_API_KEY = 'DEMO_KEY';
+    
+    // Professional space education data
+    const spaceEducationData = {
+      mars: {
+        name: 'Mars: The Red Planet Study',
+        mainStory: "Mars, the fourth planet from the Sun, represents one of humanity's most studied celestial neighbors. This terrestrial planet, with its distinctive reddish appearance, has been the subject of extensive scientific research and exploration missions. Mars is approximately half the size of Earth, with a diameter of 6,792 kilometers, and orbits the Sun at an average distance of 227.9 million kilometers.\n\nThe planet's characteristic red color results from iron oxide (rust) present in its soil and rocks. Mars possesses a thin atmosphere composed primarily of carbon dioxide, with trace amounts of nitrogen and argon. The planet experiences significant temperature variations, ranging from -195°F (-125°C) at the polar regions during winter to 70°F (20°C) at the equator during summer.\n\nCurrent scientific understanding indicates that Mars once had a more substantial atmosphere and liquid water on its surface, evidenced by geological formations including dried riverbeds, lake basins, and mineral deposits that form only in the presence of water.",
+        educationalFacts: [
+          "A Martian solar day (sol) lasts 24 hours, 39 minutes, and 35 seconds, remarkably similar to Earth's 24-hour day.",
+          "Mars has two natural satellites: Phobos (diameter 22.2 km) and Deimos (diameter 12.6 km), both likely captured asteroids.",
+          "Olympus Mons, located on Mars, is the largest known volcano in the solar system, standing approximately 21 kilometers high with a base diameter of 600 kilometers.",
+          "The planet experiences seasonal changes due to its axial tilt of 25.2 degrees, similar to Earth's 23.5-degree tilt.",
+          "Mars has polar ice caps composed of frozen water and carbon dioxide that expand and contract seasonally.",
+          "Dust storms on Mars can become global phenomena, sometimes obscuring the entire planetary surface for months.",
+          "Evidence from rover missions indicates that liquid water existed on Mars' surface for extended periods billions of years ago.",
+          "The Martian atmosphere has a surface pressure less than 1% of Earth's atmospheric pressure."
+        ]
+      },
+      jupiter: {
+        name: 'Jupiter: Gas Giant and Solar System Guardian',
+        mainStory: "Jupiter stands as the largest planet in our solar system, containing more mass than all other planets combined. This gas giant, composed primarily of hydrogen and helium, serves as a gravitational shield for the inner planets, deflecting potentially hazardous asteroids and comets away from Earth and its neighbors.\n\nWith an equatorial diameter of 142,984 kilometers, Jupiter is approximately 11 times wider than Earth. The planet completes one rotation in just under 10 hours, making it the fastest-spinning planet in our solar system. This rapid rotation creates extreme weather patterns, including the famous Great Red Spot, a persistent anticyclonic storm larger than Earth that has been observed for over 400 years.\n\nJupiter's extensive moon system includes at least 79 known natural satellites, with the four largest - Io, Europa, Ganymede, and Callisto - discovered by Galileo Galilei in 1610. These Galilean moons continue to provide valuable scientific insights into planetary formation and the potential for extraterrestrial life.",
+        educationalFacts: [
+          "Jupiter's mass is 2.5 times greater than all other planets in the solar system combined.",
+          "The Great Red Spot is an anticyclonic storm that has persisted for at least 400 years and could contain two to three Earth-sized planets.",
+          "Jupiter has a complex ring system, though much fainter than Saturn's, discovered by Voyager 1 in 1979.",
+          "The planet's magnetic field is approximately 20,000 times stronger than Earth's magnetic field.",
+          "Europa, one of Jupiter's moons, contains more water than all of Earth's oceans combined beneath its icy surface.",
+          "Jupiter emits more energy than it receives from the Sun due to gravitational compression and residual heat from its formation.",
+          "The planet's atmospheric composition is approximately 89% hydrogen and 10% helium, with traces of other compounds.",
+          "Jupiter's gravity has significantly influenced the evolution and current structure of the entire solar system."
+        ]
+      },
+      saturn: {
+        name: 'Saturn: The Ringed Wonder of Our Solar System',
+        mainStory: "Saturn, the sixth planet from the Sun, is renowned for its spectacular ring system and unique physical properties. This gas giant has a lower density than water, meaning it would theoretically float if placed in a sufficiently large ocean. Saturn's rings, composed of countless ice and rock particles ranging from tiny grains to house-sized chunks, extend up to 282,000 kilometers from the planet's center while maintaining a thickness of only about 1 kilometer.\n\nThe planet itself has an equatorial diameter of 120,536 kilometers and completes one rotation in approximately 10 hours and 42 minutes. Saturn's rapid rotation creates a pronounced oblate shape, with the equatorial diameter being about 10% larger than the polar diameter. The planet's atmosphere, like Jupiter's, consists primarily of hydrogen and helium, with wind speeds reaching up to 1,800 kilometers per hour.\n\nSaturn's moon system includes 82 confirmed natural satellites, with Titan being larger than Mercury and possessing a substantial atmosphere and liquid methane lakes on its surface.",
+        educationalFacts: [
+          "Saturn's ring system spans up to 282,000 kilometers in diameter but is typically only about 1 kilometer thick.",
+          "The planet's density is 0.687 g/cm³, making it the only planet in our solar system less dense than water.",
+          "Titan, Saturn's largest moon, has a thicker atmosphere than Earth and is the only moon known to have stable liquid on its surface.",
+          "Saturn's rings are divided into several distinct sections, labeled A through G, with the Cassini Division being the most prominent gap.",
+          "Enceladus, another of Saturn's moons, has active water geysers erupting from its south polar region.",
+          "The planet's magnetic field is nearly perfectly aligned with its rotational axis, a unique characteristic among gas giants.",
+          "Saturn's hexagonal storm at its north pole is a unique atmospheric phenomenon not observed elsewhere in the solar system.",
+          "The ring particles range in size from tiny dust grains to objects several meters in diameter."
+        ]
+      }
+    };
+
+    // Professional quiz system
+    const educationalQuiz = {
+      mars: {
+        title: "Mars Knowledge Assessment",
+        questions: [
+          {
+            q: "What is the primary cause of Mars' red appearance?",
+            options: ["Copper deposits", "Iron oxide (rust)", "Volcanic ash", "Atmospheric gases"],
+            correct: 1,
+            explanation: "Iron oxide, commonly known as rust, gives Mars its distinctive red color."
+          },
+          {
+            q: "How many natural satellites does Mars have?",
+            options: ["None", "Two", "Four", "Seven"],
+            correct: 1,
+            explanation: "Mars has two small moons: Phobos and Deimos, likely captured asteroids."
+          },
+          {
+            q: "What is the name of the largest volcano on Mars?",
+            options: ["Mount Olympus", "Olympus Mons", "Valles Marineris", "Tharsis Montes"],
+            correct: 1,
+            explanation: "Olympus Mons is the largest volcano in the solar system, standing about 21 km high."
+          },
+          {
+            q: "How long is a Martian day compared to Earth?",
+            options: ["Shorter by 2 hours", "Exactly the same", "Longer by 37 minutes", "Longer by 3 hours"],
+            correct: 2,
+            explanation: "A Martian sol (day) is 24 hours, 39 minutes, and 35 seconds long."
+          },
+          {
+            q: "What is the average surface pressure on Mars compared to Earth?",
+            options: ["Equal to Earth", "Half of Earth's", "Less than 1% of Earth's", "Twice Earth's"],
+            correct: 2,
+            explanation: "Mars' atmospheric pressure is less than 1% of Earth's atmospheric pressure."
+          },
+          {
+            q: "Which space agency first successfully landed a rover on Mars?",
+            options: ["ESA", "NASA", "Roscosmos", "CNSA"],
+            correct: 1,
+            explanation: "NASA's Mars Pathfinder mission deployed the first successful Mars rover, Sojourner, in 1997."
+          },
+          {
+            q: "What evidence suggests Mars once had liquid water?",
+            options: ["Current rivers", "Geological formations", "Atmospheric composition", "Magnetic field"],
+            correct: 1,
+            explanation: "Geological formations like dried riverbeds and mineral deposits indicate past water activity."
+          },
+          {
+            q: "What is the orbital period of Mars around the Sun?",
+            options: ["365 days", "500 days", "687 days", "800 days"],
+            correct: 2,
+            explanation: "Mars takes approximately 687 Earth days to complete one orbit around the Sun."
+          },
+          {
+            q: "What is the composition of Mars' polar ice caps?",
+            options: ["Pure water ice", "Pure carbon dioxide", "Water and carbon dioxide ice", "Nitrogen ice"],
+            correct: 2,
+            explanation: "Mars' polar caps contain both frozen water and carbon dioxide (dry ice)."
+          },
+          {
+            q: "Which Mars rover has operated the longest on the planet's surface?",
+            options: ["Sojourner", "Spirit", "Opportunity", "Curiosity"],
+            correct: 2,
+            explanation: "Opportunity operated for nearly 15 years (2004-2018), far exceeding its planned 90-day mission."
+          }
+        ]
+      },
+      jupiter: {
+        title: "Jupiter Knowledge Assessment",
+        questions: [
+          {
+            q: "What percentage of the solar system's planetary mass does Jupiter contain?",
+            options: ["50%", "65%", "71%", "85%"],
+            correct: 2,
+            explanation: "Jupiter contains approximately 71% of all planetary mass in our solar system."
+          },
+          {
+            q: "How many known moons does Jupiter have?",
+            options: ["63", "79", "95", "108"],
+            correct: 1,
+            explanation: "Jupiter has at least 79 confirmed moons, with four major ones discovered by Galileo."
+          },
+          {
+            q: "What is the Great Red Spot?",
+            options: ["A large crater", "An anticyclonic storm", "A moon", "A ring system"],
+            correct: 1,
+            explanation: "The Great Red Spot is a massive anticyclonic storm that has persisted for centuries."
+          }
+        ]
+      },
+      saturn: {
+        title: "Saturn Knowledge Assessment", 
+        questions: [
+          {
+            q: "What makes Saturn unique among gas giants?",
+            options: ["Fastest rotation", "Lowest density", "Strongest gravity", "Hottest temperature"],
+            correct: 1,
+            explanation: "Saturn has the lowest density of any planet, less dense than water."
+          },
+          {
+            q: "What are Saturn's rings primarily composed of?",
+            options: ["Rock and metal", "Gas and dust", "Ice and rock", "Liquid water"],
+            correct: 2,
+            explanation: "Saturn's rings consist mainly of water ice particles and rocky debris."
+          },
+          {
+            q: "Which moon of Saturn has lakes of liquid methane?",
+            options: ["Enceladus", "Titan", "Mimas", "Iapetus"],
+            correct: 1,
+            explanation: "Titan has lakes and seas of liquid methane and ethane on its surface."
+          }
+        ]
+      },
+      default: {
+        title: "General Space Science Assessment",
+        questions: [
+          {
+            q: "How many planets are in our solar system?",
+            options: ["Seven", "Eight", "Nine", "Ten"],
+            correct: 1,
+            explanation: "Our solar system has eight planets since Pluto was reclassified as a dwarf planet in 2006."
+          },
+          {
+            q: "What is the closest star to Earth?",
+            options: ["Proxima Centauri", "Alpha Centauri", "The Sun", "Sirius"],
+            correct: 2,
+            explanation: "The Sun is our closest star at approximately 150 million kilometers away."
+          },
+          {
+            q: "Why is space considered a vacuum?",
+            options: ["No gravity", "No matter", "Very low density", "No temperature"],
+            correct: 2,
+            explanation: "Space has extremely low particle density, making it essentially a vacuum."
+          }
+        ]
+      }
+    };
+
+    // Get professional content
+    function getEducationalContent(searchTerm) {
+      const term = searchTerm.toLowerCase();
+      for (const [key, data] of Object.entries(spaceEducationData)) {
+        if (term.includes(key)) {
+          return data;
+        }
+      }
+      return {
+        name: 'General Space Science Overview',
+        mainStory: "Space science encompasses the study of celestial objects, space, and the physical universe as a whole. This interdisciplinary field combines astronomy, astrophysics, planetary science, and space exploration to advance our understanding of the cosmos. Through systematic observation, theoretical modeling, and direct exploration via spacecraft and rovers, scientists continue to uncover the mysteries of our universe and humanity's place within it.",
+        educationalFacts: [
+          "The observable universe contains an estimated 100 billion galaxies, each containing billions of stars.",
+          "Space missions have provided critical data about planetary formation, stellar evolution, and cosmic phenomena.",
+          "The International Space Station serves as a laboratory for microgravity research and international cooperation.",
+          "Modern telescopes can observe light that has traveled billions of years from distant galaxies.",
+          "Space exploration has led to numerous technological innovations that benefit life on Earth.",
+          "Scientists use spectroscopy to determine the composition of distant stars and planets.",
+          "The search for extraterrestrial life focuses on finding water and organic compounds on other worlds.",
+          "Space science education prepares students for careers in STEM fields and space exploration."
+        ]
+      };
+    }
+
+    // Enhanced image fetching
+    async function fetchEducationalImages(query, count = 6) {
+      try {
+        const response = await fetch(`https://images-api.nasa.gov/search?q=${encodeURIComponent(query)}&media_type=image&page_size=30`);
+        const data = await response.json();
+        
+        if (!data.collection?.items?.length) {
+          throw new Error('No images found');
+        }
+
+        const images = [];
+        const items = data.collection.items
+          .filter(item => item.links && item.data && item.data[0])
+          .sort(() => Math.random() - 0.5)
+          .slice(0, count);
+        
+        for (const item of items) {
+          images.push({
+            url: item.links[0].href,
+            title: item.data[0].title || 'NASA Discovery',
+            description: (item.data[0].description || 'Educational space content').substring(0, 100),
+            date: item.data[0].date_created ? new Date(item.data[0].date_created).toLocaleDateString() : 'Unknown',
+            id: item.data[0].nasa_id || `img_${Date.now()}`
+          });
+        }
+        
+        return images.length > 0 ? images : null;
+      } catch (error) {
+        console.error('Error fetching images:', error);
+        return null;
+      }
+    }
+
+    // Main content generation
+    async function generateStory() {
+      const searchTerm = document.getElementById('searchInput').value.trim() || 'space science';
+      const resultsDiv = document.getElementById('results');
+      
+      resultsDiv.innerHTML = '<div class="loading">Loading educational content from NASA databases...</div>';
+
+      try {
+        const educationData = getEducationalContent(searchTerm);
+        const images = await fetchEducationalImages(searchTerm);
+        
+        if (!images) {
+          throw new Error('Unable to load educational images');
+        }
+
+        const imageCards = images.map((img, index) => `
+          <div class="image-card">
+            <img src="${img.url}" alt="${img.title}" onerror="this.parentElement.style.display='none'">
+            <h4>Figure ${index + 1}: ${img.title}</h4>
+            <p>Date: ${img.date}<br>Description: ${img.description}</p>
+          </div>
+        `).join('');
+
+        const factsList = educationData.educationalFacts.map((fact, index) => `
+          <div class="fact-box">
+            <strong>Key Point ${index + 1}:</strong> ${fact}
+          </div>
+        `).join('');
+
+        resultsDiv.innerHTML = `
+          <div class="results">
+            <div class="story-section">
+              <h2>${educationData.name}</h2>
+              <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #007bff;">
+                <h3 style="color: #007bff; margin-bottom: 15px;">Educational Overview</h3>
+                <p style="font-size: 16px; line-height: 1.6; text-align: justify; color: #000;">${educationData.mainStory}</p>
+              </div>
+              
+              <h3 style="color: #000; margin: 25px 0 15px; text-align: center;">Scientific Facts and Discoveries</h3>
+              ${factsList}
+              
+              <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center;">
+                <p style="color: #000; font-weight: 500;">
+                  Educational Content Complete<br>
+                  Continue exploring our solar system and beyond!
+                </p>
+              </div>
+            </div>
+            
+            <h3 style="color: #000; text-align: center; margin: 20px 0;">NASA Educational Images (${images.length} resources)</h3>
+            <div class="gallery">${imageCards}</div>
+            
+            <div style="text-align: center; margin-top: 25px;">
+              <button class="puzzle-btn" onclick="startAssessment('${searchTerm}')">
+                Take Knowledge Assessment
+              </button>
+              <button class="search-btn" onclick="showDashboard()" style="background: #6c757d; margin-left: 10px;">
+                View Progress
+              </button>
+            </div>
+          </div>
+        `;
+
+      } catch (error) {
+        resultsDiv.innerHTML = `
+          <div class="error">
+            <h3>Content Loading Error</h3>
+            <p>Unable to load educational content. Please check your internet connection or try: Mars, Jupiter, Saturn, or general space topics.</p>
+          </div>
+        `;
+      }
+    }
+
+    // Fixed professional quiz system
+    function startAssessment(searchTerm) {
+      const quizKey = searchTerm.toLowerCase().includes('mars') ? 'mars' :
+                     searchTerm.toLowerCase().includes('jupiter') ? 'jupiter' :
+                     searchTerm.toLowerCase().includes('saturn') ? 'saturn' : 'default';
+      
+      const fullQuiz = educationalQuiz[quizKey];
+      const selectedQuestions = [...fullQuiz.questions].sort(() => Math.random() - 0.5).slice(0, 5);
+      
+      let currentQuestion = 0;
+      let score = 0;
+      let userAnswers = [];
+
+      function showQuestion() {
+        const q = selectedQuestions[currentQuestion];
+        const optionsHTML = q.options.map((option, index) => `
+          <div class="option" data-index="${index}">${option}</div>
+        `).join('');
+
+        document.getElementById('results').innerHTML = `
+          <div class="quiz-section">
+            <h2>${fullQuiz.title}</h2>
+            <div style="background: #e9ecef; padding: 10px; border-radius: 6px; margin-bottom: 20px; text-align: center;">
+              <strong>Question ${currentQuestion + 1} of ${selectedQuestions.length}</strong> | Score: ${score}/${currentQuestion}
+            </div>
+            <div class="question">
+              <h3 style="color: #000; margin-bottom: 15px;">Question ${currentQuestion + 1}</h3>
+              <p style="font-size: 17px; margin-bottom: 20px; line-height: 1.6; color: #000;">${q.q}</p>
+              <div class="options">${optionsHTML}</div>
+            </div>
+            <div id="feedback" style="margin-top: 20px; text-align: center;"></div>
+          </div>
+        `;
+
+        // Add click handlers to options
+        document.querySelectorAll('.option').forEach((option, index) => {
+          option.addEventListener('click', () => selectAnswer(index, q.correct, q.explanation));
+        });
+      }
+
+      function selectAnswer(selected, correct, explanation) {
+        const options = document.querySelectorAll('.option');
+        const feedback = document.getElementById('feedback');
+        
+        // Disable all options
+        options.forEach((option, index) => {
+          option.style.pointerEvents = 'none';
+          if (index === correct) {
+            option.classList.add('correct');
+          } else if (index === selected && selected !== correct) {
+            option.classList.add('wrong');
+          }
+        });
+
+        // Store answer
+        userAnswers.push({
+          question: selectedQuestions[currentQuestion].q,
+          selected: selected,
+          correct: correct,
+          isCorrect: selected === correct
+        });
+
+        // Show feedback
+        const isCorrect = selected === correct;
+        if (isCorrect) score++;
+
+        feedback.innerHTML = `
+          <div style="background: ${isCorrect ? '#d4edda' : '#f8d7da'}; padding: 15px; border-radius: 6px; border: 1px solid ${isCorrect ? '#c3e6cb' : '#f5c6cb'};">
+            <p style="color: #000; font-weight: 600; margin-bottom: 10px;">
+              ${isCorrect ? 'Correct!' : 'Incorrect'}
+            </p>
+            <p style="color: #000; font-size: 15px;">${explanation}</p>
+          </div>
+        `;
+
+        // Continue to next question
+        setTimeout(() => {
+          currentQuestion++;
+          if (currentQuestion < selectedQuestions.length) {
+            showQuestion();
+          } else {
+            showAssessmentResults();
+          }
+        }, 2500);
+      }
+
+      function showAssessmentResults() {
+        const percentage = Math.round((score / selectedQuestions.length) * 100);
+        let performance, recommendation;
+        
+        if (percentage >= 80) {
+          performance = "Excellent";
+          recommendation = "You have demonstrated strong understanding of this topic. Consider exploring advanced space science concepts.";
+        } else if (percentage >= 60) {
+          performance = "Good";
+          recommendation = "You have a solid foundation. Review the material and try additional assessments to improve.";
+        } else {
+          performance = "Needs Improvement";
+          recommendation = "Consider reviewing the educational content again and focusing on the key scientific concepts.";
+        }
+        
+        const resultsHTML = userAnswers.map((answer, index) => `
+          <div style="background: ${answer.isCorrect ? '#e8f5e8' : '#ffebee'}; padding: 10px; margin: 8px 0; border-radius: 6px; border-left: 3px solid ${answer.isCorrect ? '#4caf50' : '#f44336'};">
+            <strong style="color: #000;">Q${index + 1}:</strong> ${answer.question}<br>
+            <small style="color: #000;">${answer.isCorrect ? 'Correct' : 'Incorrect'}</small>
+          </div>
+        `).join('');
+        
+        document.getElementById('results').innerHTML = `
+          <div class="quiz-section">
+            <h2>Assessment Results</h2>
+            <div style="text-align: center; background: #f8f9fa; padding: 25px; border-radius: 8px; margin: 20px 0;">
+              <h3 style="color: #000; margin-bottom: 15px;">Performance: ${performance}</h3>
+              <p style="font-size: 20px; margin-bottom: 15px; color: #000;">Score: ${score}/${selectedQuestions.length} (${percentage}%)</p>
+              <p style="color: #000; font-size: 15px; line-height: 1.5; max-width: 500px; margin: 0 auto;">${recommendation}</p>
+            </div>
+            
+            <h4 style="color: #000; margin: 20px 0;">Detailed Results:</h4>
+            <div style="max-height: 300px; overflow-y: auto;">
+              ${resultsHTML}
+            </div>
+            
+            <div style="text-align: center; margin-top: 25px;">
+              <button class="search-btn" onclick="document.getElementById('results').innerHTML=''; document.getElementById('searchInput').focus();">
+                Generate New Content
+              </button>
+              <button class="puzzle-btn" onclick="startAssessment('${searchTerm}')">
+                Retake Assessment
+              </button>
+            </div>
+          </div>
+        `;
+        
+        // Save progress if backend is available
+        if (window.nasaBackend) {
+          nasaBackend.trackQuizProgress(searchTerm, score, selectedQuestions.length);
+        }
+      }
+
+      // Start the assessment
+      showQuestion();
+    }
+
+    // Dashboard functionality
+    function showDashboard() {
+      if (window.nasaBackend) {
+        nasaBackend.showUserDashboard();
+      } else {
+        document.getElementById('results').innerHTML = `
+          <div class="results">
+            <div class="story-section">
+              <h2>User Dashboard</h2>
+              <p style="color: #000; text-align: center; padding: 20px;">
+                Dashboard features are loading...<br>
+                <small>Backend services initializing</small>
+              </p>
+              <div style="text-align: center; margin-top: 20px;">
+                <button class="search-btn" onclick="document.getElementById('results').innerHTML=''; document.getElementById('searchInput').focus();">
+                  Back to Content
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // Enter key support
+    document.addEventListener('DOMContentLoaded', function() {
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            generateStory();
+          }
+        });
+      }
+    });
+
+    // Professional navigation
+    function addNavigationFeatures() {
+      setTimeout(() => {
+        const header = document.querySelector('header');
+        if (header && !document.getElementById('navMenu')) {
+          const nav = document.createElement('nav');
+          nav.id = 'navMenu';
+          nav.style.cssText = 'margin-top: 15px;';
+          nav.innerHTML = `
+            <button class="search-btn" onclick="showDashboard()" style="margin: 5px; padding: 8px 16px; font-size: 14px;">
+              Dashboard
+            </button>
+            <button class="puzzle-btn" onclick="showHelp()" style="margin: 5px; padding: 8px 16px; font-size: 14px;">
+              Help
+            </button>
+          `;
+          header.appendChild(nav);
+        }
+      }, 1000);
+    }
+
+    // Help section
+    function showHelp() {
+      document.getElementById('results').innerHTML = `
+        <div class="results">
+          <div class="story-section">
+            <h2>How to Use NASA Story Generator</h2>
+            <div style="color: #000; line-height: 1.6;">
+              <h3 style="color: #000; margin: 20px 0 10px;">Getting Started:</h3>
+              <ol style="margin-left: 20px;">
+                <li>Enter a space topic in the search box (e.g., Mars, Jupiter, Saturn)</li>
+                <li>Click "Generate Educational Content" to create your story</li>
+                <li>Read the scientific information and view NASA images</li>
+                <li>Take the knowledge assessment to test your learning</li>
+              </ol>
+              
+              <h3 style="color: #000; margin: 20px 0 10px;">Features:</h3>
+              <ul style="margin-left: 20px;">
+                <li><strong>Educational Stories:</strong> Science-based narratives about space topics</li>
+                <li><strong>NASA Images:</strong> Real photographs and data from NASA missions</li>
+                <li><strong>Knowledge Assessments:</strong> Interactive quizzes with detailed explanations</li>
+                <li><strong>Progress Tracking:</strong> Monitor your learning journey</li>
+              </ul>
+              
+              <h3 style="color: #000; margin: 20px 0 10px;">Best Topics to Explore:</h3>
+              <p>Mars, Jupiter, Saturn, Moon, Solar System, Galaxies, Nebulae, Space Exploration</p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 25px;">
+              <button class="search-btn" onclick="document.getElementById('results').innerHTML=''; document.getElementById('searchInput').focus();">
+                Start Exploring
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Initialize navigation
+    document.addEventListener('DOMContentLoaded', addNavigationFeatures);
+  </script>
+</body>
+</html>
