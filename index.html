@@ -4,19 +4,46 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NASA Story Generator - Professional Space Education Platform</title>
+
+  <!-- Your main stylesheet -->
   <link rel="stylesheet" href="h.css">
   <link rel="icon" href="Screenshot 2025-09-26 094936.png">
-  <script src="p.js"></script>
+
+  <!-- Optional external script you referenced -->
+  <script src="p.js" defer></script>
+
+  <!-- Three.js CDN for 3D starfield -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js" defer></script>
+
+  <style>
+    /* Minimal inline CSS to ensure canvas sits behind content.
+       Your h.css should already include more full styling — this just prevents canvas covering UI. */
+    #bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1; /* behind overlay */
+      display: block;
+    }
+    .overlay {
+      position: relative;
+      z-index: 1;
+    }
+  </style>
 </head>
 <body>
+  <!-- 3D Starfield Canvas (Three.js) -->
+  <canvas id="bg"></canvas>
+
   <div class="overlay">
     <div class="container">
       <header>
         <h1>Dream with NASA</h1>
         <p class="subtitle">Professional Space Education Platform</p>
-
       </header>
-      
+
       <main>
         <section class="search-box">
           <input type="text" id="searchInput" placeholder="Enter space topic: Mars, Jupiter, Moon, Saturn, Solar System...">
@@ -29,6 +56,10 @@
     </div>
   </div>
 
+  <!-- =========================
+       Your full original script
+       (kept intact, functional)
+       ========================= -->
   <script>
     const NASA_API_KEY = 'DEMO_KEY';
     
@@ -586,6 +617,119 @@
     // Initialize navigation
     document.addEventListener('DOMContentLoaded', addNavigationFeatures);
   </script>
+
+  <!-- =========================
+       Three.js starfield script
+       (keeps separate so it executes after three.js is loaded)
+       ========================= -->
+  <script>
+    // Wait until Three.js is available
+    (function initStarfield() {
+      // If THREE isn't loaded yet, wait a moment (deferred script tag helped but be robust)
+      if (typeof THREE === 'undefined') {
+        // try again shortly
+        return setTimeout(initStarfield, 50);
+      }
+
+      const canvas = document.getElementById('bg');
+      const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+
+      const scene = new THREE.Scene();
+      // subtle bluish fog for depth (optional)
+      scene.fog = new THREE.FogExp2(0x000011, 0.0006);
+
+      const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 4000);
+      camera.position.z = 800;
+
+      // create star points
+      function createStars(count = 3000, radius = 1500) {
+        const positions = new Float32Array(count * 3);
+        for (let i = 0; i < count; i++) {
+          const phi = Math.acos(2 * Math.random() - 1);
+          const theta = 2 * Math.PI * Math.random();
+
+          const r = radius * (0.6 + 0.4 * Math.random()); // spread
+          const x = r * Math.sin(phi) * Math.cos(theta);
+          const y = r * Math.sin(phi) * Math.sin(theta);
+          const z = r * Math.cos(phi);
+
+          positions[i * 3] = x;
+          positions[i * 3 + 1] = y;
+          positions[i * 3 + 2] = z;
+        }
+
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+        const material = new THREE.PointsMaterial({
+          color: 0xffffff,
+          size: 1.2,
+          sizeAttenuation: true,
+          transparent: true,
+          opacity: 0.9
+        });
+
+        const points = new THREE.Points(geometry, material);
+        return points;
+      }
+
+      const stars = createStars(3500, 1800);
+      scene.add(stars);
+
+      // optional: a subtle nebula using a large textured sprite (requires texture access)
+      // We'll create a soft gradient sphere using shader-like material (fallback simple sphere)
+      const nebulaGeometry = new THREE.SphereGeometry(1000, 32, 32);
+      const nebulaMaterial = new THREE.MeshBasicMaterial({
+        color: 0x07102a,
+        transparent: true,
+        opacity: 0.2,
+        side: THREE.BackSide
+      });
+      const nebula = new THREE.Mesh(nebulaGeometry, nebulaMaterial);
+      scene.add(nebula);
+
+      // small rotation offsets for motion
+      const starRotationSpeed = { x: 0.0006, y: 0.0009 };
+
+      function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+
+      window.addEventListener('resize', onWindowResize);
+
+      // subtle parallax on mouse move
+      let mouseX = 0, mouseY = 0;
+      document.addEventListener('mousemove', (e) => {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        mouseX = (e.clientX - w / 2) / w;
+        mouseY = (e.clientY - h / 2) / h;
+      });
+
+      function animate() {
+        requestAnimationFrame(animate);
+
+        // rotate star cloud slowly
+        stars.rotation.x += starRotationSpeed.x;
+        stars.rotation.y += starRotationSpeed.y;
+
+        // gentle camera parallax based on mouse
+        camera.position.x += (mouseX * 80 - camera.position.x) * 0.02;
+        camera.position.y += (-mouseY * 40 - camera.position.y) * 0.02;
+        camera.lookAt(scene.position);
+
+        // slow nebula rotation
+        nebula.rotation.y += 0.0002;
+
+        renderer.render(scene, camera);
+      }
+
+      animate();
+    })();
+  </script>
 </body>
 </html>
-
